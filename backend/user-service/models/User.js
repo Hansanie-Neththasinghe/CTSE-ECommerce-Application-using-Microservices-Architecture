@@ -1,9 +1,20 @@
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
+
+// const UserSchema = new mongoose.Schema({
+//     username: { type: String, required: true },
+//     email: { type: String, required: true, unique: true },
+//     password: { type: String, required: true }
+// });
+
+// module.exports = mongoose.model("User", UserSchema);
+
+const mongoose = require("mongoose");
 
 const UserSchema = new mongoose.Schema({
-    username: { type: String, required: true },
+    username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    role: { type: String, enum: ["admin", "customer"], default: "customer" } // Add role field
 });
 
 module.exports = mongoose.model("User", UserSchema);

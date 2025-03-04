@@ -9,7 +9,7 @@ const connectDB = async () => {
         });
         console.log("✅ MongoDB Connected");
     } catch (err) {
-        console.error("❌ MongoDB Connection Error:", err);
+        console.error("MongoDB Connection Error:", err);
         process.exit(1); // Stop app if DB connection fails
     }
 };

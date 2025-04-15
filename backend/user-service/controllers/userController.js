@@ -75,5 +75,53 @@ const getUserById = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, getUserById };
+// @desc Get all users
+// @route GET /users
+const getAllUsers = async (req, res) => {
+    try {
+        const users = await User.find({});
+        res.json(users);
+    } catch (error) {
+        res.status(500).json({ error: "Server error: " + error.message });
+    }
+};
+
+// @desc Update a user by ID
+// @route PUT /users/:id
+const updateUserById = async (req, res) => {
+    try {
+        const { username, email, password, role } = req.body;
+        const updateData = { username, email, role };
+
+        if (password) {
+            updateData.password = await bcrypt.hash(password, 10);
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, {
+            new: true,
+            runValidators: true,
+        });
+
+        if (!updatedUser) return res.status(404).json({ error: "User not found" });
+
+        res.json({ message: "User updated successfully", data: updatedUser });
+    } catch (error) {
+        res.status(500).json({ error: "Server error: " + error.message });
+    }
+};
+
+// @desc Delete a user by ID
+// @route DELETE /users/:id
+const deleteUserById = async (req, res) => {
+    try {
+        const deletedUser = await User.findByIdAndDelete(req.params.id);
+        if (!deletedUser) return res.status(404).json({ error: "User not found" });
+
+        res.json({ message: "User deleted successfully", data: deletedUser });
+    } catch (error) {
+        res.status(500).json({ error: "Server error: " + error.message });
+    }
+};
+
+module.exports = { registerUser, getUserById, getAllUsers, updateUserById, deleteUserById };
 

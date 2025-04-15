@@ -38,20 +38,38 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
+// console.log("🛡️ Loaded JWT_SECRET in Gateway:", process.env.JWT_SECRET);
+
 const app = express();
 app.use(cors());
-app.use(express.json());
 
 // Service URLs
 const SERVICES = {
-    USER_SERVICE: process.env.USER_SERVICE_URL || "http://localhost:5001",
-    AUTH_SERVICE: process.env.AUTH_SERVICE_URL || "http://localhost:5002",
+    USER_SERVICE: process.env.USER_SERVICE_URL || "http://user-service:5001",
+    AUTH_SERVICE: process.env.AUTH_SERVICE_URL || "http://auth-service:5002",
     PRODUCT_SERVICE: process.env.PRODUCT_SERVICE_URL || "http://localhost:5003",
     ORDER_SERVICE: process.env.ORDER_SERVICE_URL || "http://localhost:5004"
 };
@@ -67,15 +85,30 @@ const authenticateToken = (req, res, next) => {
     const token = req.header("Authorization")?.split(" ")[1];
 
     if (!token) return res.status(403).json({ error: "Access Denied: No Token Provided" });
+    console.log("🔐 Verifying with secret:", process.env.JWT_SECRET);
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
+        console.log("🔑 Token verified:", decoded);
+
         next();
     } catch (err) {
-        return res.status(401).json({ error: "Invalid Token" });
+        console.error("❌ Token verification failed:", err.message);
+        return res.status(401).json({ error: "Invalid Token API Gateway Level", detail: err.message });
     }
 };
+
+app.get("/test-token", (req, res) => {
+    const token = req.header("Authorization")?.split(" ")[1];
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      res.json({ valid: true, decoded });
+    } catch (e) {
+      res.status(401).json({ valid: false, error: e.message });
+    }
+  });
+  
 
 // Middleware for Role-Based Access Control (RBAC)
 const authorizeRole = (roles) => {
@@ -88,11 +121,102 @@ const authorizeRole = (roles) => {
 };
 
 // Open Routes (No Authentication Required)
-app.use("/auth", createProxyMiddleware({ target: SERVICES.AUTH_SERVICE, changeOrigin: true }));
-app.use("/api/users/register", createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true }));
+app.use(
+    "/auth/login",
+    createProxyMiddleware({
+      target: SERVICES.AUTH_SERVICE,
+      changeOrigin: true,
+      pathRewrite: (path, req) => {
+        console.log("🔁 Rewriting path (auth):", path);
+        return "/auth/login"; // ✅ This ensures correct route
+      },
+      logLevel: "debug"
+    })
+  );
+    
+// app.use("/auth", createProxyMiddleware({ target: SERVICES.AUTH_SERVICE, changeOrigin: true }));
+// app.use("/api/users/register", createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true}));
+
+// app.use("/api/users/register", createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true,  pathRewrite: {
+//     "^/api/users/register": "/api/register"
+// }
+// }));
+
+// app.use(
+//     "/api/users/register",
+//     createProxyMiddleware({
+//       target: SERVICES.USER_SERVICE,
+//       changeOrigin: true,
+//       pathRewrite: {
+//         "^/api/users/register$": "/api/register"  // 💥 Match full path exactly
+//       }
+//     })
+//   );
+
+
+// app.use(
+//     "/api/users/register",
+//     createProxyMiddleware({
+//       target: SERVICES.USER_SERVICE,
+//       changeOrigin: true,
+//       pathRewrite: {
+//         "^/api/users/register$": "/api/register" // ✅ full exact path match
+//       },
+//       logLevel: "debug" // 🐛 add for detailed logs
+//     })
+//   );
+
+
+app.use(
+    "/api/users/register",
+    createProxyMiddleware({
+      target: SERVICES.USER_SERVICE,
+      changeOrigin: true,
+      pathRewrite: (path, req) => {
+        console.log("🔁 Rewriting path:", path);
+        return "/api/register";
+      },
+      logLevel: "debug"
+    })
+  );
+  
+
+app.use(express.json());
+
 
 // Protected Routes (Require Authentication)
-app.use("/api/users", authenticateToken, createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true }));
+// app.use("/api/users", authenticateToken, createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true }));
+app.use(
+    "/api/users",
+    authenticateToken,
+    createProxyMiddleware({
+      target: SERVICES.USER_SERVICE,
+      changeOrigin: true,
+      pathRewrite: (path, req) => {
+        console.log("🔁 Before Rewriting path (protected user):", path );
+        const rewrittenPath = ("/api"+ path)
+        console.log("🔁 Rewriting path (protected user):", path, "→", rewrittenPath);
+        return rewrittenPath;
+      },
+      logLevel: "debug"
+    })
+  );
+
+// app.use(
+//     "/api",
+//     authenticateToken,
+//     createProxyMiddleware({
+//       target: SERVICES.USER_SERVICE,
+//       changeOrigin: true,
+//       pathRewrite: (path, req) => {
+//         console.log("🔁 Rewriting full user path:", path);
+//         return path; // No need to modify if /api is already expected by user-service
+//       },
+//       logLevel: "debug"
+//     })
+//   );
+  
+
 app.use("/api/products", authenticateToken, createProxyMiddleware({ target: SERVICES.PRODUCT_SERVICE, changeOrigin: true }));
 app.use("/api/orders", authenticateToken, createProxyMiddleware({ target: SERVICES.ORDER_SERVICE, changeOrigin: true }));
 
@@ -110,6 +234,12 @@ app.use(
     authorizeRole(["admin"]),
     createProxyMiddleware({ target: SERVICES.ORDER_SERVICE, changeOrigin: true })
 );
+
+app.use((req, res, next) => {
+    console.log(`➡️ Forwarding ${req.method} ${req.originalUrl}`);
+    next();
+  });
+  
 
 // Default Route
 app.get("/", (req, res) => {

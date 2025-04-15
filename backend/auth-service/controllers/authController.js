@@ -10,10 +10,12 @@ const loginUser = async (req, res) => {
         const { username, password } = req.body;
 
         const user = await User.findOne({ username });
-        if (!user) return res.status(401).json({ error: "Invalid credentials" });
+        if (!user) return res.status(401).json({ error: "No User Found" });
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (!isPasswordValid) return res.status(401).json({ error: "Invalid credentials" });
+
+        console.log("🔐 Signing with secret:", process.env.JWT_SECRET);
 
         const token = jwt.sign(
             { id: user._id, username: user.username, role: user.role },
@@ -21,7 +23,7 @@ const loginUser = async (req, res) => {
             { expiresIn: "1h" }
         );
 
-        res.json({ token });
+        res.json({ user,token });
     } catch (error) {
         res.status(500).json({ error: "Server error: " + error.message });
     }

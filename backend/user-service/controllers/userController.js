@@ -1,33 +1,3 @@
-// const User = require('../models/User');
-
-// // @desc Register a new user
-// // @route POST /register
-// const registerUser = async (req, res) => {
-//     try {
-//         const { username, email, password } = req.body;
-//         const user = new User({ username, email, password });
-//         await user.save();
-//         res.status(201).json(user);
-//     } catch (error) {
-//         res.status(500).json({ error: "Server error: " + error.message });
-//     }
-// };
-
-// // @desc Get a user by ID
-// // @route GET /users/:id
-// const getUserById = async (req, res) => {
-//     try {
-//         const user = await User.findById(req.params.id);
-//         if (!user) return res.status(404).json({ error: "User not found" });
-//         res.json(user);
-//     } catch (error) {
-//         res.status(500).json({ error: "Server error: " + error.message });
-//     }
-// };
-
-// module.exports = { registerUser, getUserById };
-
-
 // const bcrypt = require("bcrypt");
 const bcrypt = require('bcryptjs');
 const User = require("../models/User");
@@ -88,31 +58,6 @@ const getAllUsers = async (req, res) => {
 
 // // @desc Update a user by ID
 // // @route PUT /users/:id
-// const updateUserById = async (req, res) => {
-//     console.log("✏️ Update endpoint hit", req.params.id, req.body);
-//     console.log("📝 PUT body received:", req.body);
-//     try {
-//         const { username, email, password, role } = req.body;
-//         const updateData = { username, email, role };
-
-//         if (password) {
-//             updateData.password = await bcrypt.hash(password, 10);
-//         }
-
-//         const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, {
-//             new: true,
-//             runValidators: true,
-//         });
-
-//         if (!updatedUser) return res.status(404).json({ error: "User not found" });
-
-//         res.json({ message: "User updated successfully", data: updatedUser });
-//     } catch (error) {
-//         console.error("❌ Error in updateUserById:", error.message);
-//         res.status(500).json({ error: "Server error: " + error.message });
-//     }
-// };
-
 const updateUserById = async (req, res) => {
     console.log("✏️ Update endpoint hit:", req.params.id);
     console.log("📝 PUT body received:", req.body);
@@ -155,7 +100,6 @@ const updateUserById = async (req, res) => {
         res.status(500).json({ error: "Server error: " + error.message });
     }
 };
-
 
 // @desc Delete a user by ID
 // @route DELETE /users/:id

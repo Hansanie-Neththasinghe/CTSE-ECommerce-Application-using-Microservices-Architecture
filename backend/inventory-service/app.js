@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const userRoutes = require('./routes/userRoutes');
+const inventoryRoutes = require('./routes/inventoryRoutes');
 
 const app = express();
 
@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 
 
 // Routes
-app.use('/user-service', userRoutes);
+app.use('/inventory-service', inventoryRoutes);
 
 
 // ✅ Global error handler – MUST be after all routes and middleware

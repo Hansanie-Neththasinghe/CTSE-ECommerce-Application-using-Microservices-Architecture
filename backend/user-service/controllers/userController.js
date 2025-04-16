@@ -114,5 +114,39 @@ const deleteUserById = async (req, res) => {
     }
 };
 
-module.exports = { registerUser, getUserById, getAllUsers, updateUserById, deleteUserById };
+// @desc Reset user password
+// @route PUT /users/:id/reset-password
+const resetPassword = async (req, res) => {
+    const userId = req.params.id;
+    const { newPassword } = req.body;
+
+    console.log("🔁 Password reset request for user:", userId);
+
+    if (!newPassword || newPassword.trim().length < 5) {
+        return res.status(400).json({ error: "Password must be at least 6 characters long" });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { password: hashedPassword },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        console.log("✅ Password reset successfully");
+        res.json({ message: "Password reset successfully", user: updatedUser });
+
+    } catch (error) {
+        console.error("❌ Error resetting password:", error.message);
+        res.status(500).json({ error: "Server error: " + error.message });
+    }
+};
+
+
+module.exports = { registerUser, getUserById, getAllUsers, updateUserById, deleteUserById, resetPassword };
 

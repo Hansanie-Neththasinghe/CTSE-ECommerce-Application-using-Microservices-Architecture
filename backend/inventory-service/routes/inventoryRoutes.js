@@ -1,20 +1,33 @@
-const express = require("express");
-
+const express = require('express');
 const router = express.Router();
+const {
+  getAllItems,
+  getItemById,
+  getItemByName,
+  getItemByProductId,
+  createItem,
+  updateItemByName,
+  updateItemByProductId,
+  deleteItemByName,
+  deleteItemByProductId
+} = require('../controllers/inventoryController');
 
-// // Register a new user
-// router.post("/register", registerUser);
+// Root CRUD
+router.route('/').get(getAllItems).post(createItem);
 
-// // Get all users
-// router.get("/", getAllUsers);
+// Get by Mongo _id
+router.route('/id/:id').get(getItemById);
 
-// // Get a user by ID
-// router.get("/:id", getUserById);
+// Get/Update/Delete by name
+router.route('/name/:name')
+  .get(getItemByName)
+  .put(updateItemByName)
+  .delete(deleteItemByName);
 
-// // Update a user by ID
-// router.put("/:id", updateUserById);
-
-// // Delete a user by ID
-// router.delete("/:id", deleteUserById);
+// Get/Update/Delete by productId
+router.route('/product/:productId')
+  .get(getItemByProductId)
+  .put(updateItemByProductId)
+  .delete(deleteItemByProductId);
 
 module.exports = router;

@@ -1,11 +1,17 @@
+const mongoose = require('mongoose');
 
-const mongoose = require("mongoose");
-
-const InventorySchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: { type: String, enum: ["admin", "customer"], default: "customer" }
+const inventorySchema = new mongoose.Schema({
+  productId: { type: String, required: true, unique: true }, // ✅ Add unique constraint
+  name: { type: String, required: true },
+  description: String,
+  quantity: { type: Number, required: true },          // Total quantity received or available
+  remainingQuantity: { type: Number, required: true }, // Stock left after cart/checkout
+  unitPrice: { type: Number, required: true },
+  weight: { type: String },                            // e.g., "500g", "1kg"
+  discountRate: { type: Number, default: 0 },          // e.g., 10 for 10%
+  date: { type: Date, default: Date.now }              // Automatically set current date
+}, {
+  timestamps: true
 });
 
-module.exports = mongoose.model("Inventory", InventorySchema);
+module.exports = mongoose.model('Inventory', inventorySchema);

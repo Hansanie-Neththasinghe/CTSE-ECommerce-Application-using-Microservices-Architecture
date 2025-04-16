@@ -7,6 +7,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use("/api/v1/products", productRoutes);
+app.use("/api/v1/product-service", productRoutes);
 
 module.exports = app;

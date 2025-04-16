@@ -46,29 +46,29 @@ services:
     networks:
       - ecommerce-network
 
-  # product-service:
-  #   build: ./product-service
-  #   ports:
-  #     - "5003:5003"
-  #   depends_on:
-  #     - mongo
-  #   environment:
-  #     - MONGO_URI=mongodb://mongo:27017/products
-  #   restart: always
-  #   networks:
-  #     - ecommerce-network
+  product-service:
+    build: ./product-service
+    ports:
+      - "5003:5003"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb+srv://hansaniprojects:hxflRjA243ryRSU0@cluster0.uc7gq.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+    restart: always
+    networks:
+      - ecommerce-network
 
-  # order-service:
-  #   build: ./order-service
-  #   ports:
-  #     - "5004:5004"
-  #   depends_on:
-  #     - mongo
-  #   environment:
-  #     - MONGO_URI=mongodb://mongo:27017/orders
-  #   restart: always
-  #   networks:
-  #     - ecommerce-network
+  order-service:
+    build: ./order-service
+    ports:
+      - "5004:5004"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URI=mongodb+srv://hansaniprojects:7UMrJiW9CFk07IyP@orderdb-ctse.efhov85.mongodb.net/?retryWrites=true&w=majority&appName=OrderDB-CTSE
+    restart: always
+    networks:
+      - ecommerce-network
 
   inventory-service:
     build: ./inventory-service

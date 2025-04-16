@@ -1,20 +1,26 @@
 const express = require("express");
-
 const router = express.Router();
+const {
+  getAllCarts,
+  getCartByUserId,
+  getCartByUserName,
+  addToCart,
+  deleteCartByUserId,
+  deleteCartByUserName
+} = require("../controllers/cartController");
 
-// // Register a new user
-// router.post("/register", registerUser);
+// All carts
+router.get("/", getAllCarts);
 
-// // Get all users
-// router.get("/", getAllUsers);
+// CRUD by userId
+router.get("/user-id/:userId", getCartByUserId);
+router.delete("/user-id/:userId", deleteCartByUserId);
 
-// // Get a user by ID
-// router.get("/:id", getUserById);
+// CRUD by userName
+router.get("/user-name/:userName", getCartByUserName);
+router.delete("/user-name/:userName", deleteCartByUserName);
 
-// // Update a user by ID
-// router.put("/:id", updateUserById);
-
-// // Delete a user by ID
-// router.delete("/:id", deleteUserById);
+// Add or update cart
+router.post("/", addToCart);
 
 module.exports = router;

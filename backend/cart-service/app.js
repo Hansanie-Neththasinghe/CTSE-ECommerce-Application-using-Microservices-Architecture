@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 
 
 // Routes
-app.use('/inventory-service', cartRoutes);
+app.use('/cart-service', cartRoutes);
 
 
 // ✅ Global error handler – MUST be after all routes and middleware

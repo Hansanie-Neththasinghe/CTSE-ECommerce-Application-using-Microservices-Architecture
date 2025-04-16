@@ -49,7 +49,7 @@ services:
   product-service:
     build: ./product-service
     ports:
-      - "5003:5003"
+      - "5011:5003"
     depends_on:
       - mongo
     environment:
@@ -61,7 +61,7 @@ services:
   order-service:
     build: ./order-service
     ports:
-      - "5004:5004"
+      - "5012:5004"
     depends_on:
       - mongo
     environment:

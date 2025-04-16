@@ -85,12 +85,14 @@ const authenticateToken = (req, res, next) => {
     const token = req.header("Authorization")?.split(" ")[1];
 
     if (!token) return res.status(403).json({ error: "Access Denied: No Token Provided" });
-    console.log("🔐 Verifying with secret:", process.env.JWT_SECRET);
+    // console.log("🔐 Verifying with secret:", process.env.JWT_SECRET);
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
-        console.log("🔑 Token verified:", decoded);
+        // console.log("🔑 Token verified:", decoded);
+        console.log("🔑 Token verified:");
+
 
         next();
     } catch (err) {
@@ -186,36 +188,60 @@ app.use(express.json());
 
 // Protected Routes (Require Authentication)
 // app.use("/api/users", authenticateToken, createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true }));
-app.use(
-    "/api/users",
-    authenticateToken,
-    createProxyMiddleware({
-      target: SERVICES.USER_SERVICE,
-      changeOrigin: true,
-      pathRewrite: (path, req) => {
-        console.log("🔁 Before Rewriting path (protected user):", path );
-        const rewrittenPath = ("/api"+ path)
-        console.log("🔁 Rewriting path (protected user):", path, "→", rewrittenPath);
-        return rewrittenPath;
-      },
-      logLevel: "debug"
-    })
-  );
-
 // app.use(
-//     "/api",
+//     "/api/users",
 //     authenticateToken,
 //     createProxyMiddleware({
 //       target: SERVICES.USER_SERVICE,
 //       changeOrigin: true,
 //       pathRewrite: (path, req) => {
-//         console.log("🔁 Rewriting full user path:", path);
-//         return path; // No need to modify if /api is already expected by user-service
+//         console.log("🔁 Before Rewriting path (protected user):", path );
+//         const rewrittenPath = ("/api"+ path)
+//         console.log("🔁 Rewriting path (protected user):", path, "→", rewrittenPath);
+//         return rewrittenPath;
 //       },
 //       logLevel: "debug"
 //     })
-//   );
-  
+//   );  
+
+app.use(
+  "/api/users",
+  authenticateToken,
+  createProxyMiddleware({
+    target: SERVICES.USER_SERVICE,
+    changeOrigin: true,
+    pathRewrite: (path, req) => {
+      const originalPath = req.originalUrl;
+      const rewrittenPath = originalPath.replace(/^\/api\/users/, "/api");
+      console.log("🔁 Rewriting path (protected user):", originalPath, "→", rewrittenPath);
+      return rewrittenPath;
+    },
+        logLevel: "debug"
+  })
+);
+
+
+// app.use(
+//   "/api/users",
+//   authenticateToken,
+//   createProxyMiddleware({
+//     target: SERVICES.USER_SERVICE,
+//     changeOrigin: true,
+//     pathRewrite: {
+//       '^/api/users': '/api' // Preserve the full path
+//     },
+//     onProxyReq: (proxyReq, req, res) => {
+//       console.log('Proxying to:', proxyReq.path);
+//       if (req.body) {
+//         const bodyData = JSON.stringify(req.body);
+//         proxyReq.setHeader('Content-Type', 'application/json');
+//         proxyReq.setHeader('Content-Length', Buffer.byteLength(bodyData));
+//         proxyReq.write(bodyData);
+//       }
+//     },
+//     logLevel: "debug"
+//   })
+// );
 
 app.use("/api/products", authenticateToken, createProxyMiddleware({ target: SERVICES.PRODUCT_SERVICE, changeOrigin: true }));
 app.use("/api/orders", authenticateToken, createProxyMiddleware({ target: SERVICES.ORDER_SERVICE, changeOrigin: true }));

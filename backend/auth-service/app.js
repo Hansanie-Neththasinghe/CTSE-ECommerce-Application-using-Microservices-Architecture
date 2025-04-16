@@ -6,6 +6,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-app.use("/auth", authRoutes);
+app.use("/auth-service", authRoutes);
 
 module.exports = app;

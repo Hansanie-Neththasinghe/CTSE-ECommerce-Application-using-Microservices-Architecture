@@ -12,7 +12,7 @@ RUN npm install
 COPY . .
 
 # Expose the port used by Order Service
-EXPOSE 5001
+EXPOSE 5004
 
 # Start the Order Service
 CMD ["node", "server.js"]

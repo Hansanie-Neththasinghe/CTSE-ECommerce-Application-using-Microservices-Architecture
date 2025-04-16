@@ -1,5 +1,5 @@
 const express = require("express");
-const { registerUser, getUserById, getAllUsers, updateUserById, deleteUserById } = require("../controllers/userController");
+const { registerUser, getUserById, getAllUsers, updateUserById, deleteUserById, resetPassword } = require("../controllers/userController");
 
 const router = express.Router();
 
@@ -14,6 +14,9 @@ router.get("/:id", getUserById);
 
 // Update a user by ID
 router.put("/:id", updateUserById);
+
+// Reset password
+router.put("/:id/reset-password", resetPassword);
 
 // Delete a user by ID
 router.delete("/:id", deleteUserById);

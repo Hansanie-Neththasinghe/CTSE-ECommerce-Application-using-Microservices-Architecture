@@ -86,29 +86,76 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-// @desc Update a user by ID
-// @route PUT /users/:id
+// // @desc Update a user by ID
+// // @route PUT /users/:id
+// const updateUserById = async (req, res) => {
+//     console.log("✏️ Update endpoint hit", req.params.id, req.body);
+//     console.log("📝 PUT body received:", req.body);
+//     try {
+//         const { username, email, password, role } = req.body;
+//         const updateData = { username, email, role };
+
+//         if (password) {
+//             updateData.password = await bcrypt.hash(password, 10);
+//         }
+
+//         const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, {
+//             new: true,
+//             runValidators: true,
+//         });
+
+//         if (!updatedUser) return res.status(404).json({ error: "User not found" });
+
+//         res.json({ message: "User updated successfully", data: updatedUser });
+//     } catch (error) {
+//         console.error("❌ Error in updateUserById:", error.message);
+//         res.status(500).json({ error: "Server error: " + error.message });
+//     }
+// };
+
 const updateUserById = async (req, res) => {
+    console.log("✏️ Update endpoint hit:", req.params.id);
+    console.log("📝 PUT body received:", req.body);
+
     try {
         const { username, email, password, role } = req.body;
-        const updateData = { username, email, role };
+        const updateData = {};
 
-        if (password) {
-            updateData.password = await bcrypt.hash(password, 10);
+        if (username) updateData.username = username;
+        if (email) updateData.email = email;
+        if (role) updateData.role = role;
+
+        if (password && password.trim() !== "") {
+            console.log("🔒 Hashing password...");
+            try {
+                updateData.password = await bcrypt.hash(password, 10);
+                console.log("✅ Password hashed successfully");
+            } catch (err) {
+                console.error("❌ Error hashing password:", err.message);
+                return res.status(500).json({ error: "Error hashing password" });
+            }
         }
 
+        console.log("🛠 Updating user in DB...");
         const updatedUser = await User.findByIdAndUpdate(req.params.id, updateData, {
             new: true,
             runValidators: true,
         });
 
-        if (!updatedUser) return res.status(404).json({ error: "User not found" });
+        if (!updatedUser) {
+            console.log("❗ User not found");
+            return res.status(404).json({ error: "User not found" });
+        }
 
+        console.log("✅ User updated:", updatedUser);
         res.json({ message: "User updated successfully", data: updatedUser });
+
     } catch (error) {
+        console.error("❌ Error in updateUserById:", error.message);
         res.status(500).json({ error: "Server error: " + error.message });
     }
 };
+
 
 // @desc Delete a user by ID
 // @route DELETE /users/:id

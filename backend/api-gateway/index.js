@@ -1,67 +1,9 @@
-// const express = require("express");
-// const { createProxyMiddleware } = require("http-proxy-middleware");
-// const cors = require("cors");
-// require("dotenv").config();
-
-// const app = express();
-// app.use(cors());
-// app.use(express.json());
-
-// // Service URLs
-// const SERVICES = {
-//     USER_SERVICE: process.env.USER_SERVICE_URL || "http://localhost:5001",
-//     AUTH_SERVICE: process.env.AUTH_SERVICE_URL || "http://localhost:5002",
-//     PRODUCT_SERVICE: process.env.PRODUCT_SERVICE_URL || "http://localhost:5003",
-//     ORDER_SERVICE: process.env.ORDER_SERVICE_URL || "http://localhost:5004"
-// };
-
-// // Logging Middleware (Optional)
-// app.use((req, res, next) => {
-//     console.log(`[API Gateway] ${req.method} ${req.originalUrl}`);
-//     next();
-// });
-
-// // Proxy Requests to Microservices
-// app.use("/api/users", createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true }));
-// app.use("/api/auth", createProxyMiddleware({ target: SERVICES.AUTH_SERVICE, changeOrigin: true }));
-// app.use("/api/products", createProxyMiddleware({ target: SERVICES.PRODUCT_SERVICE, changeOrigin: true }));
-// app.use("/api/orders", createProxyMiddleware({ target: SERVICES.ORDER_SERVICE, changeOrigin: true }));
-
-// // Default Route
-// app.get("/", (req, res) => {
-//     res.send("API Gateway is Running!");
-// });
-
-// // Start API Gateway
-// const PORT = process.env.PORT || 8080;
-// app.listen(PORT, () => console.log(`🚀 API Gateway running on port ${PORT}`));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const express = require("express");
 const { createProxyMiddleware } = require("http-proxy-middleware");
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-
-// console.log("🛡️ Loaded JWT_SECRET in Gateway:", process.env.JWT_SECRET);
 
 const app = express();
 app.use(cors());
@@ -85,12 +27,14 @@ const authenticateToken = (req, res, next) => {
     const token = req.header("Authorization")?.split(" ")[1];
 
     if (!token) return res.status(403).json({ error: "Access Denied: No Token Provided" });
-    console.log("🔐 Verifying with secret:", process.env.JWT_SECRET);
+    // console.log("🔐 Verifying with secret:", process.env.JWT_SECRET);
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
-        console.log("🔑 Token verified:", decoded);
+        // console.log("🔑 Token verified:", decoded);
+        console.log("🔑 Token verified:");
+
 
         next();
     } catch (err) {
@@ -99,6 +43,7 @@ const authenticateToken = (req, res, next) => {
     }
 };
 
+// Test Token Route (Optional)
 app.get("/test-token", (req, res) => {
     const token = req.header("Authorization")?.split(" ")[1];
     try {
@@ -135,87 +80,78 @@ app.use(
   );
     
 // app.use("/auth", createProxyMiddleware({ target: SERVICES.AUTH_SERVICE, changeOrigin: true }));
-// app.use("/api/users/register", createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true}));
+// app.use("/api/update/users", authenticateToken, createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true }));
+app.use("/api/users/register", createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true}));
+
+app.use("/api/users", authenticateToken, createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true }));
 
 // app.use("/api/users/register", createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true,  pathRewrite: {
 //     "^/api/users/register": "/api/register"
 // }
 // }));
 
-// app.use(
-//     "/api/users/register",
-//     createProxyMiddleware({
-//       target: SERVICES.USER_SERVICE,
-//       changeOrigin: true,
-//       pathRewrite: {
-//         "^/api/users/register$": "/api/register"  // 💥 Match full path exactly
-//       }
-//     })
-//   );
 
+
+// // This is the correct code to user-service- register funcionality
 
 // app.use(
 //     "/api/users/register",
-//     createProxyMiddleware({
-//       target: SERVICES.USER_SERVICE,
-//       changeOrigin: true,
-//       pathRewrite: {
-//         "^/api/users/register$": "/api/register" // ✅ full exact path match
-//       },
-//       logLevel: "debug" // 🐛 add for detailed logs
-//     })
-//   );
-
-
-app.use(
-    "/api/users/register",
-    createProxyMiddleware({
-      target: SERVICES.USER_SERVICE,
-      changeOrigin: true,
-      pathRewrite: (path, req) => {
-        console.log("🔁 Rewriting path:", path);
-        return "/api/register";
-      },
-      logLevel: "debug"
-    })
-  );
-  
-
-app.use(express.json());
-
-
-// Protected Routes (Require Authentication)
-// app.use("/api/users", authenticateToken, createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true }));
-app.use(
-    "/api/users",
-    authenticateToken,
-    createProxyMiddleware({
-      target: SERVICES.USER_SERVICE,
-      changeOrigin: true,
-      pathRewrite: (path, req) => {
-        console.log("🔁 Before Rewriting path (protected user):", path );
-        const rewrittenPath = ("/api"+ path)
-        console.log("🔁 Rewriting path (protected user):", path, "→", rewrittenPath);
-        return rewrittenPath;
-      },
-      logLevel: "debug"
-    })
-  );
-
-// app.use(
-//     "/api",
-//     authenticateToken,
 //     createProxyMiddleware({
 //       target: SERVICES.USER_SERVICE,
 //       changeOrigin: true,
 //       pathRewrite: (path, req) => {
-//         console.log("🔁 Rewriting full user path:", path);
-//         return path; // No need to modify if /api is already expected by user-service
+//         console.log("🔁 Rewriting path:", path);
+//         return "/api/register";
 //       },
 //       logLevel: "debug"
 //     })
 //   );
   
+app.use(express.json());
+
+
+// // Protected Routes (Require Authentication)
+
+// app.use("/api/users", authenticateToken, createProxyMiddleware({ target: SERVICES.USER_SERVICE, changeOrigin: true }));
+
+// app.use(
+//     "/api/users",
+//     authenticateToken,
+//     createProxyMiddleware({
+//       target: SERVICES.USER_SERVICE,
+//       changeOrigin: true,
+//       pathRewrite: (path, req) => {
+//         console.log("🔁 Before Rewriting path (protected user):", path );
+//         const rewrittenPath = ("/api"+ path)
+//         console.log("🔁 Rewriting path (protected user):", path, "→", rewrittenPath);
+//         return rewrittenPath;
+//       },
+//       logLevel: "debug"
+//     })
+//   );  
+
+
+
+
+
+// // This is the correct code to user-service
+
+// app.use(
+//   "/api/users",
+//   authenticateToken,
+//   createProxyMiddleware({
+//     target: SERVICES.USER_SERVICE,
+//     changeOrigin: true,
+//     pathRewrite: (path, req) => {
+//       const originalPath = req.originalUrl;
+//       const rewrittenPath = originalPath.replace(/^\/api\/users/, "/api");
+//       console.log("🔁 Rewriting path (protected user):", originalPath, "→", rewrittenPath);
+//       return rewrittenPath;
+//     },
+//         logLevel: "debug"
+//   })
+// );
+
 
 app.use("/api/products", authenticateToken, createProxyMiddleware({ target: SERVICES.PRODUCT_SERVICE, changeOrigin: true }));
 app.use("/api/orders", authenticateToken, createProxyMiddleware({ target: SERVICES.ORDER_SERVICE, changeOrigin: true }));

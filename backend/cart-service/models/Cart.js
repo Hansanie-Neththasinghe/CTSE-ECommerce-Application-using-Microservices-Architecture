@@ -1,11 +1,28 @@
-
 const mongoose = require("mongoose");
 
-const CartSchema = new mongoose.Schema({
-    username: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: { type: String, enum: ["admin", "customer"], default: "customer" }
+const cartSchema = new mongoose.Schema({
+  userId: { type: String, required: true },
+  userName: { type: String, required: true }, // ✅ added support for userName
+  items: [
+    {
+      productId: { type: String, required: true },
+      name: String,
+      quantity: Number,
+      unitPrice: Number,
+      weight: String,
+      discountRate: { type: Number, default: 0 },
+      subtotal: Number // Automatically calculated
+    }
+  ],
+  totalPrice: {
+    type: Number,
+    get: (v) => parseFloat(v.toFixed(2)),
+    set: (v) => parseFloat(v.toFixed(2))
+  }
+}, {
+  timestamps: true,
+  toJSON: { getters: true },
+  toObject: { getters: true }
 });
 
-module.exports = mongoose.model("Cart", CartSchema);
+module.exports = mongoose.model("Cart", cartSchema);

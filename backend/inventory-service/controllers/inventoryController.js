@@ -52,41 +52,56 @@ exports.getItemByProductId = async (req, res) => {
   }
 };
 
-// UPDATE by pid
+// UPDATE by pid → Add new quantity to existing quantity + remainingQuantity
 exports.updateItemByPid = async (req, res) => {
   try {
-    const item = await Inventory.findOneAndUpdate(
+    const { quantity } = req.body;
+
+    const item = await Inventory.findOne({ pid: req.params.pid });
+    if (!item) {
+      return res.status(404).json({ message: "Item not found to update (by pid)" });
+    }
+
+    const updated = await Inventory.findOneAndUpdate(
       { pid: req.params.pid },
-      req.body,
+      {
+        quantity: item.quantity + quantity,
+        remainingQuantity: (item.remainingQuantity || 0) + quantity
+      },
       { new: true }
     );
-    if (!item)
-      return res
-        .status(404)
-        .json({ message: "Item not found to update (by pid)" });
-    res.json(item);
+
+    res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// UPDATE by productId
+// UPDATE by productId → Add new quantity to existing quantity + remainingQuantity
 exports.updateItemByProductId = async (req, res) => {
   try {
-    const item = await Inventory.findOneAndUpdate(
+    const { quantity } = req.body;
+
+    const item = await Inventory.findOne({ productId: req.params.productId });
+    if (!item) {
+      return res.status(404).json({ message: "Item not found to update (by productId)" });
+    }
+
+    const updated = await Inventory.findOneAndUpdate(
       { productId: req.params.productId },
-      req.body,
+      {
+        quantity: item.quantity + quantity,
+        remainingQuantity: (item.remainingQuantity || 0) + quantity
+      },
       { new: true }
     );
-    if (!item)
-      return res
-        .status(404)
-        .json({ message: "Item not found to update (by productId)" });
-    res.json(item);
+
+    res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 // DELETE by pid
 exports.deleteItemByPid = async (req, res) => {
@@ -117,3 +132,15 @@ exports.deleteItemByProductId = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// DELETE inventory item by MongoDB _id
+exports.deleteItemById = async (req, res) => {
+  try {
+    const deleted = await Inventory.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ message: 'Inventory item not found by _id' });
+    res.json({ message: 'Inventory item deleted successfully by _id' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

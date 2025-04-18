@@ -9,6 +9,7 @@ const {
   updateItemByProductId,
   deleteItemByPid,
   deleteItemByProductId,
+  deleteItemById
 } = require("../controllers/inventoryController");
 
 router.route("/").get(getAllItems).post(createItem);
@@ -22,5 +23,8 @@ router
   .get(getItemByProductId)
   .put(updateItemByProductId)
   .delete(deleteItemByProductId);
+
+  // Delete inventory by MongoDB _id
+router.delete("/id/:id", deleteItemById);
 
 module.exports = router;

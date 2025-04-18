@@ -19,12 +19,12 @@ const cartSchema = new mongoose.Schema(
         discountRate: Number,
         weight: Number,
         itemSubtotal: Number,
-        itemShipping: Number
+        itemShipping: Number,
       },
     ],
     shippingWeight: {
       type: Number,
-      default: 0
+      default: 0,
     },
     shippingCost: {
       type: Number,
@@ -35,6 +35,11 @@ const cartSchema = new mongoose.Schema(
       type: Number,
       get: (v) => parseFloat(v.toFixed(2)),
       set: (v) => parseFloat(v.toFixed(2)),
+    },
+    status: {
+      type: String,
+      enum: ["Not Completed", "Completed"],
+      default: "Not Completed",
     },
   },
   {

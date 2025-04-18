@@ -9,7 +9,7 @@ const inventorySchema = new mongoose.Schema(
     }, // Reference to Product model
     productId: { type: String, required: true, unique: true }, // ✅ Add unique constraint
     quantity: { type: Number, required: true, required: true }, // Total quantity received or available
-    remainingQuantity: { type: Number, required: true }, // Stock left after cart/checkout
+    remainingQuantity: { type: Number}, // Stock left after cart/checkout
     date: { type: Date, default: Date.now }, // Automatically set current date
   },
   {

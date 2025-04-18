@@ -137,3 +137,69 @@ exports.updateCart = async (req, res) => {
   req.body.userid = req.params.userid;
   return exports.addToCart(req, res);
 };
+
+// ✅ Update Cart Status to Completed
+exports.markCartAsCompleted = async (req, res) => {
+  try {
+    const cart = await Cart.findOneAndUpdate(
+      { userid: req.params.userid },
+      { status: "Completed" },
+      { new: true }
+    );
+    if (!cart) return res.status(404).json({ message: 'Cart not found to mark as completed' });
+    res.json({ message: "Cart marked as completed", cart });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ✅ Get all carts by status
+exports.getCartsByStatus = async (req, res) => {
+  try {
+    const carts = await Cart.find({ status: req.params.status });
+    res.json(carts);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Manually update remaining quantity via route
+exports.manualInventoryUpdate = async (req, res) => {
+  const { pid } = req.params;
+  const { quantityChange } = req.body;
+
+  if (typeof quantityChange !== "number") {
+    return res.status(400).json({ message: "quantityChange must be a number" });
+  }
+
+  try {
+    const response = await axios.get(`http://localhost:5005/inventory-service/pid/${pid}`);
+    const item = response.data;
+
+    const newRemaining = item.remainingQuantity + quantityChange;
+
+    const updated = await axios.put(`http://localhost:5005/inventory-service/pid/${pid}`, {
+      remainingQuantity: newRemaining,
+    });
+
+    res.status(200).json({
+      message: "Inventory updated successfully",
+      updated: updated.data
+    });
+  } catch (error) {
+    console.error(`Inventory update failed for ${pid}:`, error.message);
+    res.status(500).json({ message: "Inventory update failed", error: error.message });
+  }
+};
+
+// Get only the cart ID by userId
+exports.getCartIdByUserId = async (req, res) => {
+  try {
+    const cart = await Cart.findOne({ userid: req.params.userid }).select('_id');
+    if (!cart) return res.status(404).json({ message: 'Cart not found' });
+    res.json({ cartId: cart._id });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+

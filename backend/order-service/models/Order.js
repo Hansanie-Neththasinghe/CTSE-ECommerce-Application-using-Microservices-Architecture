@@ -10,7 +10,7 @@ const OrderSchema = new mongoose.Schema({
     country: { type: String, required: true }
   },
   totalAmount: { type: Number, required: true },
-  status: { type: String, enum: ["pending", "completed", "cancelled"], default: "pending" },
+  paymentStatus: { type: String, enum: ["pending", "completed", "cancelled"], default: "pending" },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Order", OrderSchema);

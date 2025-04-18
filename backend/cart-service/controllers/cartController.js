@@ -203,3 +203,32 @@ exports.getCartIdByUserId = async (req, res) => {
   }
 };
 
+exports.updateCartStatusHansanie = async (req, res) => {
+  try {
+    const { cartId } = req.params;
+
+    if (!cartId) {
+      return res.status(400).json({ message: "Cart ID is required" });
+    }
+
+    const updatedCart = await Cart.findByIdAndUpdate(
+      cartId,
+      { status: "Completed" },
+      { new: true }
+    );
+
+    if (!updatedCart) {
+      return res.status(404).json({ message: "Cart not found" });
+    }
+
+    res.status(200).json({
+      message: "Cart status updated to Completed",
+      cart: updatedCart
+    });
+  } catch (error) {
+    console.error("Error updating cart status:", error.message);
+    res.status(500).json({ message: "Failed to update cart status", error: error.message });
+  }
+};
+
+

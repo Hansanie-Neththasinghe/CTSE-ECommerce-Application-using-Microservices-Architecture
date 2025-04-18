@@ -139,9 +139,13 @@ exports.createOrder = async (req, res) => {
 
     await order.save();
 
-    // Call Cart Service to update cart status
-    // const updateCartUrl = `${process.env.CART_SERVICE_STATUS_UPDATE_URL}/${cartId}`;
+    // // Call Cart Service to update cart status
+    // const updateCartUrl = `${process.env.CART_SERVICE_STATUS_UPDATE_URL}/${userId}/complete`;
     // await axios.put(updateCartUrl); 
+
+    // Call Cart Service to update cart status to "Completed"
+    const updateCartUrl = `${process.env.CART_SERVICE_STATUS_UPDATE_URL}/${cartId}`;
+    await axios.put(updateCartUrl);
 
     res.status(201).json(order);
   } catch (error) {
@@ -244,6 +248,7 @@ exports.deleteOrder = async (req, res) => {
     try {
         const deletedOrder = await Order.findByIdAndDelete(req.params.id);
         if (!deletedOrder) return res.status(404).json({ message: "Order not found" });
+
         res.json({ message: "Order deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -284,7 +289,7 @@ exports.completeOrder = async (req, res) => {
       if (!updatedOrder) {
         return res.status(404).json({ message: "Order not found" });
       }
-  
+
       res.json({ message: "Payment status updated to completed", order: updatedOrder });
     } catch (error) {
       console.error("Error updating payment status:", error.message);

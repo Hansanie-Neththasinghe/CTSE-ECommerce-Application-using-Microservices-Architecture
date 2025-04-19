@@ -13,10 +13,13 @@ app.use(cors());
 const SERVICES = {
     USER_SERVICE: process.env.USER_SERVICE_URL || "http://user-service:5001",
     AUTH_SERVICE: process.env.AUTH_SERVICE_URL || "http://auth-service:5002",
-    PRODUCT_SERVICE: process.env.PRODUCT_SERVICE_URL || "http://localhost:5003",
-    ORDER_SERVICE: process.env.ORDER_SERVICE_URL || "http://localhost:5004",
+    // PRODUCT_SERVICE: process.env.PRODUCT_SERVICE_URL || "http://localhost:5003",
+    PRODUCT_SERVICE: process.env.PRODUCT_SERVICE_URL || "http://product-service:5003",
+    // ORDER_SERVICE: process.env.ORDER_SERVICE_URL || "http://localhost:5004",
+    ORDER_SERVICE: process.env.ORDER_SERVICE_URL || "http://order-service:5004",
     INVENTORY_SERVICE: process.env.INVENTORY_SERVICE_URL || "http://localhost:5005",
-    CART_SERVICE: process.env.CART_SERVICE_URL || "http://localhost:5006",
+    // CART_SERVICE: process.env.CART_SERVICE_URL || "http://localhost:5006",
+    CART_SERVICE: process.env.CART_SERVICE_URL || "http://cart-service:5006",
     PAYMENT_SERVICE: process.env.PAYMENT_SERVICE_URL || "http://localhost:5007"
 };
 

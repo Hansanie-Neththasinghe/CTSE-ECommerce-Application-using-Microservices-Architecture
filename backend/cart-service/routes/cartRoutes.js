@@ -10,8 +10,6 @@ const {
   getCartsByStatus,
   manualInventoryUpdate,
   getCartIdByUserId,
-  updateCartStatusHansanie,
-  updateCartStatusToNotCompleteHansanie,
 } = require("../controllers/cartController");
 
 router.get("/", getAllCarts);
@@ -31,7 +29,5 @@ router.put("/inventory-update/:pid", manualInventoryUpdate);
 router.get("/:userid/cart-id", getCartIdByUserId);
 
 
-// update Cart Status To Complete
-router.put('/cart-status/:cartId', updateCartStatusHansanie);
 
 module.exports = router;

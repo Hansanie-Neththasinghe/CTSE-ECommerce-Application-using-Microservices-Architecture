@@ -424,4 +424,4 @@ exports.updateCartStatusHansanie = async (req, res) => {
       .json({ message: "Failed to update cart status", error: error.message });
   }
 };
-
+>>>>>>>>> Temporary merge branch 2

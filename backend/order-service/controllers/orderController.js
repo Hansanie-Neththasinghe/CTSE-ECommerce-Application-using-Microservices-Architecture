@@ -2,7 +2,7 @@ const axios = require("axios");
 require("dotenv").config();
 const mongoose = require("mongoose");
 const Order = require("../models/Order");
-const productServiceUrl = process.env.PRODUCT_SERVICE_URL;
+const productServiceUrl = process.env.PRODUCT_SERVICE_URL || `http://product-service:5003/api/products`;
 
 
 // Helper to compare order items
@@ -101,7 +101,7 @@ exports.createOrder2 = async (req, res) => {
     }
 };
 
-exports.createOrder = async (req, res) => {
+exports.createOrder3 = async (req, res) => {
   try {
     const { userId, cartId, shippingAddress } = req.body;
 
@@ -153,6 +153,101 @@ exports.createOrder = async (req, res) => {
     res.status(500).json({ message: "Failed to create order", error: error.message });
   }
 };
+
+exports.createOrder4 = async (req, res) => {
+  try {
+    const { userId, cartId, shippingAddress } = req.body;
+
+    // Validate required fields
+    if (!userId || !cartId || !shippingAddress) {
+      return res.status(400).json({ message: "userId, cartId, and shippingAddress are required." });
+    }
+
+    // Build cart service URL
+    const cartServiceUrl = `${process.env.CART_SERVICE_URL}/${userId}`;
+    console.log("➡️ Fetching cart from:", cartServiceUrl);
+    console.log("🪪 Forwarding token:", req.headers.authorization);
+
+    // Fetch cart details with Authorization header
+    const response = await axios.get(cartServiceUrl, {
+      headers: {
+        Authorization: req.headers.authorization,
+      },
+    });
+
+    const cartData = response.data;
+    console.log("🛒 Cart Data:", cartData);
+
+    // Check if cartId matches
+    if (cartData._id !== cartId) {
+      return res.status(400).json({ message: "Cart ID does not match the user's cart." });
+    }
+
+    const totalAmount = cartData.totalPrice;
+
+    // Create order
+    const order = new Order({
+      userId: new mongoose.Types.ObjectId(userId),
+      cartId: new mongoose.Types.ObjectId(cartId),
+      shippingAddress,
+      totalAmount,
+    });
+
+    await order.save();
+    console.log("✅ Order saved:", order._id);
+
+    // Update cart status
+    const updateCartUrl = `${process.env.CART_SERVICE_STATUS_UPDATE_URL}/${cartId}`;
+    console.log("➡️ Updating cart status at:", updateCartUrl);
+
+    await axios.put(updateCartUrl, null, {
+      headers: {
+        Authorization: req.headers.authorization,
+      },
+    });
+
+    console.log("✅ Cart status updated for:", cartId);
+
+    res.status(201).json(order);
+  } catch (error) {
+    console.error("🛑 Error creating order:", error.response?.data || error.message);
+    res.status(500).json({
+      message: "Failed to create order",
+      error: error.response?.data || error.message,
+    });
+  }
+};
+
+exports.createOrder = async (req, res) => {
+  try {
+    const {
+      userId,
+      cartId,
+      shippingAddress,
+      totalAmount,
+      paymentStatus, // Optional
+    } = req.body;
+
+    if (!userId || !cartId || !shippingAddress || !totalAmount) {
+      return res.status(400).json({ message: 'Missing required fields.' });
+    }
+
+    const newOrder = new Order({
+      userId,
+      cartId,
+      shippingAddress,
+      totalAmount,
+      paymentStatus, // Defaults to "pending" if not provided
+    });
+
+    const savedOrder = await newOrder.save();
+    res.status(201).json(savedOrder);
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ message: 'Failed to create order.', error });
+  }
+};
+
 
 
 // Get all orders

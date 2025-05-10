@@ -368,12 +368,31 @@ port numbers
 #### Make payment
 
 ```http
-  POST {{baseUrl}}/api/payments
+  POST {{baseURL}}/api/payments/payment-service/pay
 ```
 
 ```http
 {
-    "userId": "67ff7459abba927f00609cfe"
+    "userId": "67ff7459abba927f00609cfe",
+    "orderID": "681e2bdbd24b2a40f63318af",
+    "amount": "3500",
+    "method": "card",
+    "status": "pending"
+}
+
+```
+
+#### Update payment status
+
+```http
+  PUT {{baseURL}}/api/payments/payment-service/1254785465865
+
+```
+
+```http
+{
+    "userId": "67ff7459abba927f00609cfe",
+    "status": "completed"
 }
 
 ```
